@@ -1,13 +1,4 @@
----
-title: "495 Final Project"
-author: "Jared Grooms"
-date: "9/23/2021"
-output: html_document
----
-
-Scrape Home Page for 2018-2019
-
-```{r}
+## -----------------------------------------------------------------------------------------------------
 library(glue)
 library(readxl)
 library(rvest)
@@ -19,18 +10,12 @@ library(writexl)
 #mapdist(from = "Madison Square Garden, NY", to = "The Palace of Auburn Hills, MI")
 ggmap::register_google("AIzaSyBMmMSEDcTcGH1M8gXvEcEYACj8FvDKZwc")
 
-
 ncaa <- rvest::read_html("https://www.sports-reference.com/cbb/seasons/2019-school-stats.html")
 ncaa_table <- ncaa %>% rvest::html_table()
 
 ncaa_table <- ncaa_table[[1]]
 
-ncaa_table
-
-
-```
-
-```{r}
+## -----------------------------------------------------------------------------------------------------
 
 href_place <- ncaa %>% rvest::html_nodes("#basic_school_stats a") %>%
   rvest::html_attr("href")
@@ -49,14 +34,7 @@ for( i in 1:length(citie_links)){
 
 }
 
-cities
-length(cities)
-```
-
-
-Scrape Home Pages for Seasons other than 2018-2019
-
-```{r}
+## -----------------------------------------------------------------------------------------------------
 
 years <- 2009:2018
 links <- c()
@@ -73,14 +51,7 @@ for (i in 1:length(links)){
   home_table[i] <- new_data
 }
 
-head(home_table, n=3)
-
-```
-
-
-Code to get game logs for each team of the 2019 season
-
-```{r}
+## -----------------------------------------------------------------------------------------------------
 
 ### Create links for every team's game log page from 2019 season
 href <- ncaa %>% rvest::html_nodes("#basic_school_stats a") %>%
@@ -90,7 +61,6 @@ logs <- paste("https://www.sports-reference.com", href, "-gamelogs.html", sep=""
 
 # Create links for every team's schedule page from 2019 season
 schedule <- paste("https://www.sports-reference.com", href, "-schedule.html", sep="")
-schedule
 
 schedule_list <- c()
 
@@ -112,16 +82,11 @@ for(i in 1:length(schedule)) {
   print(i)
 }
 
-head(schedule_list)
-
-
 #################################################################
 
 # Make a list to store each data frame obtained from game logs of each team in 2019
 log_table <- c()
 school_names <- ncaa %>% rvest::html_nodes("#basic_school_stats a") %>% rvest::html_text()
-school_names[i]
-school_names
 
 arena_link <- "https://en.wikipedia.org/wiki/List_of_NCAA_Division_I_basketball_arenas"
 
@@ -129,7 +94,6 @@ arenas <- rvest::read_html(arena_link) %>% html_table()
 arenas <- arenas[[2]]
 
 arenas1 <- arenas[, c(2, 5)]
-arenas1
 
 arenas1$Team <-  as.character(arenas1$Team)
 school_names <- as.character(school_names)
@@ -194,8 +158,6 @@ arenas1$Team[arenas1$Team == "Seton Hall men"] <- "Seton Hall"
 arenas1$Team[arenas1$Team == "Sienal men"] <- "Siena"
 arenas1$Team[arenas1$Team == "St. John's men"] <- "St. John's (NY)"
 
-
-
 indexes <- c()
 
 for(i in 1:length(school_names)){
@@ -210,20 +172,12 @@ for(i in 1:length(school_names)){
 }
 
 missing <- indexes[!is.na(indexes)]
-missing
-
-length(indexes[!is.na(indexes)])
-
-sort(school_names[missing])
-sort(arenas1$Team)
 
 #######################################################################
 
 logs_clean <- logs[-missing]
-length(logs_clean)
 
 school_names <- school_names[-missing]
-length(school_names)
 
 log_table <- c()
 
@@ -249,12 +203,6 @@ for(i in 1:length(logs)){
   print(i)
 }
 
-head(log_table, 5)
-tail(log_table)
-length(log_table)
-
-
-
 for(i in 1:length(log_table)){
   
   temp1 <- arenas1[arenas1$Team==school_names[i], ]
@@ -268,12 +216,8 @@ for(i in 1:length(log_table)){
   print(i)
 }
 
-
-head(log_table)
-
 bound_list <- c()
 schedule_list <- schedule_list[-missing]
-
 
 for(i in 1:length(log_table)) {
   bound <- cbind(log_table[[i]], schedule_list[[i]])
@@ -287,8 +231,6 @@ for(i in 1:length(bound_list)){
     }
   }
 }
-
-head(bound_list)
 
 distance <- c()
 
@@ -339,9 +281,6 @@ for(i in 1:length(bound_list)){
   print(i)
 }
 
-head(bound_list)
-tail(bound_list)
-
 bound_list_new <- bound_list[-175]
 
 for(i in 1:length(bound_list_new)) {
@@ -351,8 +290,6 @@ for(i in 1:length(bound_list_new)) {
   
 }
 
-head(bound_list_new)
-
 test_names <- names(bound_list_new[[1]])
 names_equal_list <- c()
 for(i in 1:length(bound_list_new)) {
@@ -361,38 +298,23 @@ for(i in 1:length(bound_list_new)) {
   names_equal_list[i] <- names_sum
 }
 
-which(names_equal_list!=44)
-
 col_count <- c()
 for(i in 1:length(bound_list_new)){
   num_col <- ncol(bound_list_new[[i]])
   col_count[i] <- num_col
 }
 
-head(col_count)
-table(col_count)
-which(col_count==45)
-
 bound_list_new[[174]] <- bound_list_new[[174]][,-45]
 bound_list_new[[175]] <- bound_list_new[[175]][,-45]
 
 clean_bound_list <- bound_list_new
 
-
 strength <- do.call("rbind", clean_bound_list)
-
-nrow(strength)
 
 writexl::write_xlsx(strength, "C:\\Users\\Jared\\Desktop\\strength.xlsx")
 #writexl::write_xlsx(rural_anes_samples, "C:\\Users\\Jared\\Desktop\\\\rural_anes_samples.xlsx" )
 
-head(bound_list_new)
-tail(bound_list_new)
-
-### Remember that Number 20, Dunn Center is a problem
-```
-
-```{r}
+## -----------------------------------------------------------------------------------------------------
 
 bound_list <- bound_list[-175]
 
@@ -411,21 +333,10 @@ for(i in 1:length(bound_list)){
   print(i)
 }
 
-head(before_date_list)
-length(before_date_list)
-bound_list[[1]]
-
-```
-
-
-Start working with final data set
-
-```{r}
+## -----------------------------------------------------------------------------------------------------
 library(lubridate)
 
 strength_df <- readxl::read_excel("strength.xlsx")
-
-head(strength_df)
 
 new_date <- c()
 
@@ -439,7 +350,6 @@ for(i in 1:length(strength_df$Date)) {
 }
 
 strength_df <- cbind(strength_df, new_date)
-head(strength_df)
 
 rest <- abs(time_length(interval(strength_df$Date, strength_df$new_date), "day"))
 index <- which(rest > 50)
@@ -447,9 +357,8 @@ rest[index] <- 10
 rest[1] <- 10
   
 strength_df <- cbind(strength_df, rest)
-head(strength_df)
 
-#write_xlsx(strength_df, "C:\\Users\\Jared\\Desktop\\strengthdate.xlsx")
+# write_xlsx(strength_df, "C:\\Users\\Jared\\Desktop\\strengthdate.xlsx")
 
 clune <- which(strength_df$stadium == "Clune Arena")
 strength_df$stadium[clune] <- "Cadet Field House"
@@ -592,11 +501,9 @@ for(i in 3001:length(other_strength_df$stadium)){
   print(i)
 }
 
-head(other_strength_df, n = 10)
-
 my_strength <- cbind(other_strength_df, new_distance)
 
-#write_xlsx(my_strength, "C:\\Users\\Jared\\Desktop\\mystrength.xlsx")
+# write_xlsx(my_strength, "C:\\Users\\Jared\\Desktop\\mystrength.xlsx")
 
 cols <- c(3, 42, 44, 45)
 my_strength2 <- my_strength[, -cols]
@@ -607,7 +514,6 @@ colnames(my_strength2) <- c("Game", "Date", "Opponent", "W/L", "Points", "Oppone
                             "FGO", "FGAO", "FG%O", "3PO", "3PAO", "3P%O", "FTO", "FTAO", "FT%O",
                             "ORBO", "TRBO", "ASTO", "STLO", "BLKO", "TOVO", "PFO",
                             "Team", "Rest", "Travel") 
-summary(my_strength2)
 
 num_cols <- 5:38
 
@@ -617,14 +523,7 @@ point_margin <- my_strength2$Points-my_strength2$`Opponent Points`
 
 my_strength3 <- cbind(my_strength2, point_margin)
 
-#writexl::write_xlsx(my_strength3, "C:\\Users\\Jared\\Desktop\\mystrength3.xlsx")
-
-
-
-```
-
-
-```{r}
+## -----------------------------------------------------------------------------------------------------
 library(randomForest)
 library(glue)
 library(readxl)
@@ -640,7 +539,6 @@ library(gbm)
 
 # Read in data frame
 strength_data <- read_excel("mystrength3.xlsx")
-head(strength_data)
 
 ## FIlter out missing data or -999 flags
 nothing <- which(strength_data$Travel == -999)
@@ -652,8 +550,6 @@ strength_data <- na.omit(strength_data)
 strength_data2 <- strength_data[, -c(7:8, 10:11, 13:14, 23:24, 26:27, 29:30)]
 
 #############################################################################
-
-head(strength_data2)
 
 ### Find time rested by home team
 
@@ -745,12 +641,10 @@ d2 <- which(strength_data2$Opponent == "UTSA")
 strength_data2$Opponent[d2] <- "Texas-San Antonio"
 
 opp <- unique(strength_data2$Opponent)
-sort(opp)
 tm <- unique(strength_data2$Team)
 
 d1check <- tm %in% opp
 d1index <- which(d1check == FALSE)
-tm[d1index]
 
 #writexl::write_xlsx(strength_data2, "C:\\Users\\Jared\\Desktop\\strengthdata4.1.xlsx")
 
@@ -769,26 +663,15 @@ opponent_rest <- other_rest
 strength_data2 <- cbind(strength_data2, opponent_rest)
 
 writexl::write_xlsx(strength_data2, "C:\\Users\\Jared\\Documents\\strengthdata4.4.xlsx")
-```
 
-
-
-Prep Data
-```{r}
+## -----------------------------------------------------------------------------------------------------
 ###Modeling#################################################################################
 
 strength_data_ready <- read_excel("strengthdata4.4.xlsx")
-head(strength_data_ready, n = 10)
-#tail(strength_data4, n = 10)
 
 num <- which(is.na(strength_data_ready$opponent_rest))
-length(num)
-
 
 strength_sched <- na.omit(strength_data_ready)
-#nrow(strength_sched)
-head(strength_sched)
-
 
 ###
 ### Data set now only contains games played on the continental united states between two division 1 basketball teams
@@ -796,8 +679,6 @@ head(strength_sched)
 
 no_travel <- which(strength_sched$Travel <= 10)
 strength_sched_travel <- strength_sched[-no_travel,] 
-head(strength_sched_travel)
-#nrow(strength_sched_travel)
 
 strength_sched_travel$Team <- factor(strength_sched_travel$Team)
 
@@ -829,12 +710,9 @@ boxplot_data6 <- strength_sched_travel[boxplot6, ]
 my_teams7 <- my_teams[301:length(my_teams)]
 boxplot7 <- which(strength_sched_travel$Team %in% my_teams7)
 boxplot_data7 <- strength_sched_travel[boxplot7, ]
-```
 
 
-
-Point Margin Modeling
-```{r}
+## -----------------------------------------------------------------------------------------------------
 ###
 ### Test and Training set Point Margin
 ###
@@ -842,8 +720,6 @@ Point Margin Modeling
 train_index = sample(nrow(strength_sched_travel), 0.90*nrow(strength_sched_travel))
 college_train = strength_sched_travel[train_index, ]
 college_test = strength_sched_travel[-train_index, ]
-
-#head(college_train, n=10)
 
 trainX = model.matrix(point_margin~Travel+Rest+opponent_rest, data=college_train)[,-c(1)]
 testX = model.matrix(point_margin~Travel+Rest+opponent_rest, data=college_test)[,-c(1)]
@@ -859,7 +735,6 @@ random_pm_preds = predict(random_pm_train, data.frame(testX), type="response")
 ###
 
 library(glmnet)
-head(strength_sched_travel)
 
 no_mod <- c(1:27)
 modelX <- strength_sched_travel[, -no_mod]
@@ -883,7 +758,6 @@ set.seed(19)
 pm_validation = sample(nrow(strength_sched_travel), .05*nrow(strength_sched_travel))
 college_validation_pm = strength_sched_travel[pm_validation,]
 college_nonvalidation_pm = strength_sched_travel[-pm_validation,]
-#head(college_validation)
 
 k = 10
 
@@ -954,7 +828,6 @@ lines(density(college_nonvalidation_pm$point_margin),col="blue")
 lines(density(lasso_preds),col="green")
 lines(density(random_pm_preds),col="red")
 lines(density(cv_preds_pm_gb), col = "cyan")
-#plot(density(college_nonvalidation_pm$point_margin),col="blue")
 
 mean((cv_preds_pm-college_nonvalidation_pm$point_margin[nonval_sample_pm])^2)
 mean((cv_preds_pm_gb-college_nonvalidation_pm_gb$point_margin[nonval_sample_pm_gb])^2)
@@ -1027,7 +900,6 @@ total_preds2 <- big %>% group_by(rest_group) %>%
 total_preds3 <- big %>% group_by(opponent_rest_group) %>% 
   mutate(opponent_rest_group = factor(opponent_rest_group))
 
-  
 ggplot(total_preds2, aes(x= rest_group, y = sim_preds)) +
   geom_boxplot()+
   theme_bw()+
@@ -1055,40 +927,7 @@ ggplot(total_preds, aes(x=sim_data.Travel, y=sim_preds)) +
 
 #######################################################################################
 
-```
-
-
-ggplot(total_preds2, aes(x= rest_group, y = sim_preds)) +
-  geom_boxplot()+
-  theme_bw()+
-  labs(x="Days Rested by Away Team", y = "Predicted Point Margin")+
-  ggtitle("Away Team Point Margin by Days Rested") +
-  theme(plot.title = element_text(hjust = .5))+
-  geom_hline(yintercept = 0, col = "red", lwd = 1)+
-  theme(text = element_text(size = 20)) 
-
-ggplot(total_preds3, aes(x= opponent_rest_group, y = sim_preds)) +
-  geom_boxplot()+
-  theme_bw() +
-  labs(x="Days Rested by Home Team", y = "Predicted Point Margin")+
-  ggtitle("Away Team Point Margin by Days Rested") +
-  theme(plot.title = element_text(hjust = .5))+
-  geom_hline(yintercept = 0, col = "red", lwd = 1)+
-  theme(text = element_text(size = 20))
-
-ggplot(total_preds, aes(x=sim_data.Travel, y=sim_preds)) +
-  geom_point()+
-  theme_bw()+
-  labs(x="Distance Traveled by Away Team", y = "Predicted Point Margin")+
-  ggtitle("Away Team Point Margin by Distance") +
-  theme(plot.title = element_text(hjust = .5))+
-  geom_hline(yintercept = 0, col = "red", lwd = 1)+
-  theme(text = element_text(size = 20))
-  
-
-
-Turnovers 
-```{r}
+## -----------------------------------------------------------------------------------------------------
 
 strength_sched_travel$turn_over_ratio <- strength_sched_travel$TOVO-strength_sched_travel$TOV
 
@@ -1140,7 +979,6 @@ set.seed(19)
 pm_validation = sample(nrow(strength_sched_travel), .05*nrow(strength_sched_travel))
 college_validation_pm = strength_sched_travel[pm_validation,]
 college_nonvalidation_pm = strength_sched_travel[-pm_validation,]
-#head(college_validation)
 
 k = 10
 
@@ -1312,40 +1150,7 @@ ggplot(total_preds, aes(x=sim_data.Travel, y=sim_preds)) +
   theme(plot.title = element_text(hjust = .5))+
   geom_hline(yintercept = 0, col = "red", lwd = 1)
 
-
-
-```
-
-ggplot(total_preds2, aes(x= rest_group, y = sim_preds)) +
-  geom_boxplot()+
-  theme_bw()+
-  labs(x="Days Rested by Away Team", y = "Predicted Turnover Ratio")+
-  ggtitle("Away Team Turnover Ratio by Days Rested") +
-  theme(plot.title = element_text(hjust = .5))+
-  geom_hline(yintercept = 0, col = "red", lwd = 1) +
-  theme(text = element_text(size = 20))
-
-ggplot(total_preds3, aes(x= opponent_rest_group, y = sim_preds)) +
-  geom_boxplot()+
-  theme_bw() +
-  labs(x="Days Rested by Home Team", y = "Predicted Turnover Ratio")+
-  ggtitle("Away Team Turnover Ratio by Days Rested") +
-  theme(plot.title = element_text(hjust = .5))+
-  geom_hline(yintercept = 0, col = "red", lwd = 1) +
-  theme(text = element_text(size = 20))
-
-ggplot(total_preds, aes(x=sim_data.Travel, y=sim_preds)) +
-  geom_point()+
-  theme_bw()+
-  labs(x="Distance Traveled by Away Team", y = "Predicted Turnover Ratio")+
-  ggtitle("Away Team Turnover Ratio By Distance") +
-  theme(plot.title = element_text(hjust = .5))+
-  geom_hline(yintercept = 0, col = "red", lwd = 1) +
-  theme(text = element_text(size = 20))
-
-
-FG Percentage
-```{r}
+## -----------------------------------------------------------------------------------------------------
 
 train_index = sample(nrow(strength_sched_travel), 0.90*nrow(strength_sched_travel))
 college_train = strength_sched_travel[train_index, ]
@@ -1361,7 +1166,6 @@ varImpPlot(random_pm_train)
 plot(random_pm_train)
 
 random_pm_preds = predict(random_pm_train, data.frame(testX), type="response")
-
 
 ###
 ### Lasso 
@@ -1558,40 +1362,7 @@ ggplot(total_preds, aes(x=sim_data.Travel, y=sim_preds)) +
   ggtitle("Away Team FG Percentage By Distance") +
   theme(plot.title = element_text(hjust = .5))
   
-
-
-```
-
-ggplot(total_preds2, aes(x= rest_group, y = sim_preds)) +
-  geom_boxplot()+
-  theme_bw()+
-  labs(x="Days Rested by Away Team", y = "Predicted FG Percentage")+
-  ggtitle("Away Team FG Percentage by Days Rested") +
-  theme(plot.title = element_text(hjust = .5)) +
-  geom_hline(yintercept = .5, col = "red", lwd = 1) +
-  theme(text = element_text(size = 20))
-  
-
-ggplot(total_preds3, aes(x= opponent_rest_group, y = sim_preds)) +
-  geom_boxplot()+
-  theme_bw() +
-  labs(x="Days Rested by Home Team", y = "Predicted FG Percentage")+
-  ggtitle("Away Team FG Percentage by Days Rested") +
-  theme(plot.title = element_text(hjust = .5)) +
-  geom_hline(yintercept = .5, col = "red", lwd = 1) +
-  theme(text = element_text(size = 20))
-
-ggplot(total_preds, aes(x=sim_data.Travel, y=sim_preds)) +
-  geom_point()+
-  theme_bw()+
-  labs(x="Distance Traveled by Away Team", y = "Predicted FG Percentage")+
-  ggtitle("Away Team FG Percentage By Distance") +
-  theme(plot.title = element_text(hjust = .5)) +
-  theme(text = element_text(size = 20))
-
-
-Personal Fouls modeling
-```{r}
+## -----------------------------------------------------------------------------------------------------
 
 
 train_index = sample(nrow(strength_sched_travel), 0.90*nrow(strength_sched_travel))
@@ -1608,7 +1379,6 @@ varImpPlot(random_pm_train)
 plot(random_pm_train)
 
 random_pm_preds = predict(random_pm_train, data.frame(testX), type="response")
-
 
 ###
 ### Lasso 
@@ -1639,7 +1409,6 @@ set.seed(19)
 pm_validation = sample(nrow(strength_sched_travel), .05*nrow(strength_sched_travel))
 college_validation_pm = strength_sched_travel[pm_validation,]
 college_nonvalidation_pm = strength_sched_travel[-pm_validation,]
-#head(college_validation)
 
 k = 10
 
@@ -1804,34 +1573,7 @@ ggplot(total_preds, aes(x=sim_data.Travel, y=sim_preds)) +
   ggtitle("Away Team Personal Fouls By Distance") +
   theme(plot.title = element_text(hjust = .5))
 
-```
-
-ggplot(total_preds2, aes(x= rest_group, y = sim_preds)) +
-  geom_boxplot()+
-  theme_bw()+
-  labs(x="Days Rested by Away Team", y = "Predicted Number of Personal Fouls")+
-  ggtitle("Away Team Personal Fouls by Days Rested") +
-  theme(plot.title = element_text(hjust = .5)) +
-  theme(text = element_text(size = 20))
-
-ggplot(total_preds3, aes(x= opponent_rest_group, y = sim_preds)) +
-  geom_boxplot()+
-  theme_bw() +
-  labs(x="Days Rested by Home Team", y = "Predicted Number of Personal Fouls")+
-  ggtitle("Away Team Personal Fouls by Days Rested") +
-  theme(plot.title = element_text(hjust = .5)) +
-  theme(text = element_text(size = 20))
-
-ggplot(total_preds, aes(x=sim_data.Travel, y=sim_preds)) +
-  geom_point()+
-  theme_bw()+
-  labs(x="Distance Traveled by Away Team", y = "Predicted Number of Personal Fouls")+
-  ggtitle("Away Team Personal Fouls By Distance") +
-  theme(plot.title = element_text(hjust = .5)) +
-  theme(text = element_text(size = 20))
-
-Win Loss modeling
-```{r}
+## -----------------------------------------------------------------------------------------------------
 
 strength_sched_logit <- strength_sched_travel
 strength_sched_logit$Win = ifelse(grepl('W',strength_sched_logit$`W/L`),1,0)
@@ -1907,6 +1649,3 @@ WVPlots::ROCPlot(mod_df1,"rf_preds","Win",1,title="NCAA RF Gains")
 WVPlots::GainCurvePlot(mod_df1,"rf_preds","Win",title="NCAA RF Gains",wizard_color = "blue")
 
 ### Not great results for Win / Loss
-```
-
-ROCPlot(mod_df1,"rf_preds","Win",1,title="NCAA RF Gains")
